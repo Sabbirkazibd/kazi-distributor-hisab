@@ -119,31 +119,36 @@ editBill=function(id){const b=db.bills.find(x=>x.id===id);if(!b)return;if(db.pay
 </script>
 
 <script>
-// Version 9: product-wise bill summary; each price/quantity entry remains a separate row.
+// Version 10: group each product's quantities by per-piece rate for the requested summary.
+function groupedProductRows(b,name){
+  const map=new Map();
+  b.lines.filter(l=>l.product===name).forEach(l=>{
+    const rate=Number(l.rate)||0;
+    map.set(rate,(map.get(rate)||0)+(Number(l.qty)||0));
+  });
+  return [...map.entries()].sort((a,b)=>a[0]-b[0]).map(([rate,qty])=>({rate,qty,amount:rate*qty}));
+}
 function billProductSummaryHTML(b){
-  const order=products.map(p=>p[0]);
-  const names=[...new Set([...order,...b.lines.map(l=>l.product)])].filter(n=>b.lines.some(l=>l.product===n));
-  return names.map(name=>{
-    const rows=b.lines.map((l,i)=>({...l,_i:i})).filter(l=>l.product===name);
-    const pcs=rows.reduce((s,l)=>s+(+l.qty||0),0), amount=rows.reduce((s,l)=>s+(+l.qty||0)*(+l.rate||0),0);
-    const pack=packSizes[name]||1, cartons=Math.floor(pcs/pack), loose=pcs%pack;
-    return `<div class="line" style="background:#f8faff"><b>${esc(name)}</b><div class="muted">মোট: ${cartons} কাটন${loose?' + '+loose+' পিস':''} (${pcs} পিস) · পণ্যের মোট ${fmt(amount)}</div>${rows.map(l=>{const c=Math.floor(l.qty/pack),u=l.qty%pack;return `<div style="border-top:1px solid #e5eaf2;padding:7px 0">রেট: <b>${fmt(l.rate)}/পিস</b> · ${c} কাটন${u?' + '+u+' পিস':''} (${l.qty} পিস) · ${fmt(l.qty*l.rate)}</div>`}).join('')}</div>`;
+  const names=[...new Set([...products.map(p=>p[0]),...b.lines.map(l=>l.product)])].filter(n=>b.lines.some(l=>l.product===n));
+  return `<h3 class="sectiontitle">পণ্য ও রেটভিত্তিক বিক্রি</h3>`+names.map(name=>{
+    const rows=groupedProductRows(b,name),amount=rows.reduce((s,r)=>s+r.amount,0);
+    return `<div class="line" style="background:#fff;border:0;border-bottom:1px solid #e5eaf2;border-radius:0;padding:10px 2px"><b>${esc(name)}</b>${rows.map(r=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed #e5eaf2"><span>${fmt(r.rate)} × ${r.qty} পিস</span><b>${fmt(r.amount)}</b></div>`).join('')}<div style="text-align:right;padding-top:8px;font-weight:bold">সাইজ মোট: ${fmt(amount)}</div></div>`;
   }).join('');
 }
 function billProductSummaryText(b){
   const names=[...new Set([...products.map(p=>p[0]),...b.lines.map(l=>l.product)])].filter(n=>b.lines.some(l=>l.product===n));
-  return names.map(name=>{const rows=b.lines.filter(l=>l.product===name),pcs=rows.reduce((s,l)=>s+l.qty,0),amount=rows.reduce((s,l)=>s+l.qty*l.rate,0),pack=packSizes[name]||1;return `${name} — মোট ${Math.floor(pcs/pack)} কাটন${pcs%pack?' + '+(pcs%pack)+' পিস':''} (${pcs} পিস), মোট ${amount} টাকা\n`+rows.map(l=>{const c=Math.floor(l.qty/pack),u=l.qty%pack;return `  রেট ${l.rate} টাকা/পিস × ${c} কাটন${u?' + '+u+' পিস':''} (${l.qty} পিস) = ${l.qty*l.rate} টাকা`}).join('\n')}).join('\n');
+  return `পণ্য ও রেটভিত্তিক বিক্রি\n\n`+names.map(name=>{const rows=groupedProductRows(b,name),amount=rows.reduce((s,r)=>s+r.amount,0);return `${name}\n`+rows.map(r=>`৳${r.rate} × ${r.qty} পিস = ৳${r.amount}`).join('\n')+`\nসাইজ মোট: ৳${amount}`}).join('\n\n');
 }
-const _renderV9base=render;
+const _renderV10base=render;
 render=function(){
-  _renderV9base();
+  _renderV10base();
   const list=$('billList');
   if(list)list.innerHTML=db.bills.map(b=>`<div class="item"><b>${esc(b.shop)}</b> — ${esc(b.date)}<br>${billProductSummaryHTML(b)}<b>সর্বমোট বিল: ${fmt(total(b))}</b> · আদায় ${fmt(paidBill(b))} · বাকি ${fmt(dueBill(b))}<div class="actions"><button class="mini" onclick="editBill(${b.id})">✏️ এডিট</button><button class="mini" onclick="shareBill(${b.id})">🧾 রসিদ</button><button class="mini danger" onclick="deleteBill(${b.id})">মুছুন</button></div></div>`).join('')||'বিল নেই';
   const recent=$('recent');
   if(recent)recent.innerHTML=db.bills.map(b=>`<div class="item">${esc(b.shop)} — ${esc(b.date)} — ${fmt(total(b))} — বাকি ${fmt(dueBill(b))}</div>`).join('')||'বিল নেই';
 };
-const _openShopV9base=openShop;
-openShop=function(name){_openShopV9base(name);const target=$('detailBills');if(target)target.innerHTML=db.bills.filter(b=>b.shop===name).map(b=>`<div class="item"><b>তারিখ: ${esc(b.date)}</b>${billProductSummaryHTML(b)}<b>বিল: ${fmt(total(b))}</b> · আদায়: ${fmt(paidBill(b))} · ফেরত: ${fmt(returnedBill(b))} · বাকি: ${fmt(dueBill(b))}</div>`).join('')||'এই দোকানে এখনো কোনো মাল দেওয়া হয়নি';};
+const _openShopV10base=openShop;
+openShop=function(name){_openShopV10base(name);const target=$('detailBills');if(target)target.innerHTML=db.bills.filter(b=>b.shop===name).map(b=>`<div class="item"><b>তারিখ: ${esc(b.date)}</b>${billProductSummaryHTML(b)}<b>বিল: ${fmt(total(b))}</b> · আদায়: ${fmt(paidBill(b))} · ফেরত: ${fmt(returnedBill(b))} · বাকি: ${fmt(dueBill(b))}</div>`).join('')||'এই দোকানে এখনো কোনো মাল দেওয়া হয়নি';};
 shareBill=function(id){const b=db.bills.find(x=>x.id===id);if(!b)return;const text=`Kazi Distributor Hisab\nদোকান: ${b.shop}\nতারিখ: ${b.date}\n\n${billProductSummaryText(b)}\n\nসর্বমোট: ${total(b)} টাকা\nআদায়: ${paidBill(b)} টাকা\nফেরত: ${returnedBill(b)} টাকা\nবাকি: ${dueBill(b)} টাকা`;if(navigator.share)navigator.share({title:'বিলের রসিদ',text}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert('রসিদ কপি হয়েছে'));else prompt('রসিদ কপি করুন',text);};
 </script>
 
