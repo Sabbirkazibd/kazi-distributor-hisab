@@ -152,4 +152,41 @@ openShop=function(name){_openShopV10base(name);const target=$('detailBills');if(
 shareBill=function(id){const b=db.bills.find(x=>x.id===id);if(!b)return;const text=`Kazi Distributor Hisab\nদোকান: ${b.shop}\nতারিখ: ${b.date}\n\n${billProductSummaryText(b)}\n\nসর্বমোট: ${total(b)} টাকা\nআদায়: ${paidBill(b)} টাকা\nফেরত: ${returnedBill(b)} টাকা\nবাকি: ${dueBill(b)} টাকা`;if(navigator.share)navigator.share({title:'বিলের রসিদ',text}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert('রসিদ কপি হয়েছে'));else prompt('রসিদ কপি করুন',text);};
 </script>
 
+
+<script>
+// Version 11: one consolidated product/rate summary across every shop and every bill.
+function allShopsProductRateSummaryHTML(){
+  const grouped=new Map();
+  let grandTotal=0;
+  db.bills.forEach(b=>{
+    (b.lines||[]).forEach(l=>{
+      const product=String(l.product||'অন্যান্য'),rate=Number(l.rate)||0,qty=Number(l.qty)||0;
+      if(!grouped.has(product))grouped.set(product,new Map());
+      const rates=grouped.get(product);
+      rates.set(rate,(rates.get(rate)||0)+qty);
+      grandTotal+=qty*rate;
+    });
+  });
+  const names=[...new Set([...products.map(p=>p[0]),...grouped.keys()])].filter(n=>grouped.has(n));
+  if(!names.length)return '<h3 class="sectiontitle">সব দোকান মিলিয়ে পণ্য ও রেটভিত্তিক বিক্রি</h3><p class="muted">এখনো কোনো বিল নেই। বিল তৈরি হলে সব দোকানের হিসাব এখানে একসঙ্গে দেখা যাবে।</p>';
+  return `<h3 class="sectiontitle">📊 সব দোকান মিলিয়ে পণ্য ও রেটভিত্তিক বিক্রি</h3><p class="muted">সব দোকানের সব বিল একসঙ্গে যোগ করা হয়েছে। একই পণ্যের একই রেট এক লাইনে মোট পিস হিসেবে দেখানো হয়েছে।</p>`+
+    names.map(name=>{
+      const rates=grouped.get(name),rows=[...rates.entries()].sort((a,b)=>b[0]-a[0]);
+      const subtotal=rows.reduce((sum,[rate,qty])=>sum+rate*qty,0);
+      const pieces=rows.reduce((sum,[,qty])=>sum+qty,0);
+      return `<div class="line" style="background:#fff;border:0;border-bottom:1px solid #e5eaf2;border-radius:0;padding:10px 2px"><b>${esc(name)}</b>${rows.map(([rate,qty])=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px dashed #e5eaf2"><span>৳${Number(rate).toLocaleString('en-IN')} × ${Number(qty).toLocaleString('en-IN')} পিস</span><b>${fmt(rate*qty)}</b></div>`).join('')}<div style="display:flex;justify-content:space-between;padding-top:8px;font-weight:bold"><span>সাইজ মোট (${pieces.toLocaleString('en-IN')} পিস)</span><span>${fmt(subtotal)}</span></div></div>`;
+    }).join('')+`<div class="hero" style="margin-top:12px"><b>সব দোকানের সর্বমোট বিক্রি</b><strong>${fmt(grandTotal)}</strong></div>`;
+}
+const _renderV11base=render;
+render=function(){
+  _renderV11base();
+  const home=$('home');
+  if(home){
+    let card=$('allShopsRateSummary');
+    if(!card){card=document.createElement('div');card.id='allShopsRateSummary';card.className='card';const hero=home.querySelector('.hero');if(hero)home.insertBefore(card,hero);else home.appendChild(card);}
+    card.innerHTML=allShopsProductRateSummaryHTML();
+  }
+};
+</script>
+
 </body></html>
