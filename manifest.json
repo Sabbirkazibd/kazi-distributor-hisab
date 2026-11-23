@@ -1,6 +1,8 @@
 {
+  "id": "kazi-distributor-hisab",
   "name": "Kazi Distributor Hisab",
   "short_name": "Kazi Hisab",
+  "description": "Kazi Distributor Hisab is an offline-friendly business accounting app for tracking shop sales, product quantities, rates, payments, expenses, returns, and daily balances.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
