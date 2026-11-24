@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#075e54"><link rel="manifest" href="manifest.json"><title>Kazi Distributor Hisab</title>
+<style>
+*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#f3f6fb;margin:0;color:#18243a}header{background:linear-gradient(135deg,#073b9a,#1264dc);color:white;padding:20px 16px;border-radius:0 0 22px 22px;box-shadow:0 4px 14px #173c7622}header h2{margin:0 0 5px;font-size:22px}header small{opacity:.85}main{padding:12px;max-width:800px;margin:auto}nav{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}button{border:0;border-radius:10px;background:#1264dc;color:white;padding:12px 10px;margin:3px;font-weight:600}input,select{box-sizing:border-box;width:100%;padding:12px;margin:5px 0 12px;border:1px solid #d6deeb;border-radius:10px;background:#fff}.card{background:white;border-radius:16px;padding:15px;margin:12px 0;box-shadow:0 3px 12px #142c5010}.hidden{display:none}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{background:#eaf1ff;padding:13px;border-radius:13px;border-left:4px solid #2368d8;min-width:0}.stat h3{font-size:20px;margin:7px 0 0;overflow-wrap:anywhere}.stat.green{background:#e9f9ef;border-color:#18a558}.stat.red{background:#fff0f0;border-color:#e34b4b}.stat.orange{background:#fff5e6;border-color:#ee9b22}.stat.purple{background:#f3edff;border-color:#8954d6}.stat.teal{background:#e8f8f8;border-color:#159b9b}.stat small{color:#52627a}.hero{background:linear-gradient(110deg,#f1eaff,#e9f8ff);border-radius:15px;padding:15px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}.hero strong{font-size:23px;color:#157d45}.item{padding:10px 0;border-bottom:1px solid #edf0f5}.item:last-child{border-bottom:0}.danger{background:#bd3030}.line{border:1px solid #ddd;padding:10px;border-radius:8px;margin:8px 0}.shoprow{padding:13px;border-bottom:1px solid #e5eaf2;cursor:pointer;background:white}.shoprow:active{background:#eaf1ff}.muted{color:#61718a;font-size:13px}.backbtn{background:#52647d}.sectiontitle{font-size:17px;margin:5px 0 12px}.shoprow b{font-size:16px;color:#152d52}.tapnote{font-size:12px;color:#66758b}
+.mini{font-size:12px;padding:7px 9px;margin:2px}.actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.warn{background:#fff4d8;border-left:4px solid #e59a16;padding:10px;border-radius:9px;margin:8px 0}.filterrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+</style></head><body><header><h2>Kazi Distributor Hisab</h2><small>দোকান, বিল, আদায় ও বাকি হিসাব</small></header><main>
+<nav><button onclick="show('home')">হোম</button><button onclick="show('shops')">দোকান</button><button onclick="show('bills')">বিল</button><button onclick="show('payments')">আদায়</button><button onclick="show('expenses')">খরচ</button><button onclick="show('stock')">স্টক</button><button onclick="show('returns')">দোকান ফেরত</button><button onclick="show('stockReturn')">ডিস্ট্রিবিউটরে ফেরত</button><button onclick="show('reports')">রিপোর্ট</button><button onclick="show('backup')">ব্যাকআপ</button></nav>
+<section id="home">
+<div class="grid">
+<div class="stat"><small>📦 মোট মাল দেওয়া</small><h3 id="sales">৳০</h3><small id="goodsPcs">০ পিস</small></div>
+<div class="stat green"><small>💰 মোট টাকা আদায়</small><h3 id="paid">৳০</h3></div>
+<div class="stat red"><small>🧾 মোট বাকি</small><h3 id="due">৳০</h3></div>
+<div class="stat orange"><small>💸 মোট খরচ</small><h3 id="expenseTotal">৳০</h3></div>
+<div class="stat purple"><small>↩️ মোট মাল ফেরত</small><h3 id="returnTotal">৳০</h3><small id="returnPcs">০ পিস</small></div>
+<div class="stat teal"><small>🏦 খরচ বাদে অবশিষ্ট টাকা</small><h3 id="cashLeft">৳০</h3><small>মোট আদায় − মোট খরচ</small></div>
+</div>
+<div class="hero"><div><b>হাতে অবশিষ্ট টাকা</b><div class="muted">মোট আদায় − মোট খরচ</div></div><strong id="minaaz">৳০</strong></div>
+<div class="card"><h3 class="sectiontitle">🏪 দোকানের সংক্ষিপ্ত হিসাব</h3><div id="homeShops"></div><div class="tapnote">দোকানের নামে চাপ দিলে সম্পূর্ণ হিসাব দেখাবে</div></div>
+<div class="card"><h3 class="sectiontitle">🕘 সাম্প্রতিক বিল</h3><div id="recent"></div></div>
+</section>
+<section id="shops" class="hidden"><div class="card"><h3>দোকান যোগ</h3><input id="shopName" placeholder="দোকানের নাম"><input id="shopPhone" placeholder="মোবাইল (ঐচ্ছিক)"><button onclick="addShop()">সেভ</button></div><div class="card"><h3>দোকানের তালিকা</h3><input id="shopSearch" placeholder="দোকান খুঁজুন" oninput="render()"><div id="shopsList"></div></div></section>
+<section id="shopDetail" class="hidden"><div class="card"><button class="backbtn" onclick="show('shops')">← দোকানের তালিকায় ফিরুন</button><h3 id="detailShopName">দোকানের হিসাব</h3><div class="grid"><div class="stat">মোট মাল <h3 id="detailSales">৳০</h3></div><div class="stat">মোট আদায় <h3 id="detailPaid">৳০</h3></div><div class="stat">বর্তমান বাকি <h3 id="detailDue">৳০</h3></div><div class="stat">ফেরত <h3 id="detailReturns">৳০</h3></div></div></div><div class="card"><h3>মাল দেওয়ার বিস্তারিত</h3><div id="detailBills"></div></div><div class="card"><h3>টাকা আদায়ের বিস্তারিত</h3><div id="detailPayments"></div></div></section>
+<section id="bills" class="hidden"><div class="card"><h3>নতুন বিল</h3><input id="billShop" list="shopNames" placeholder="দোকানের নাম"><datalist id="shopNames"></datalist><label>তারিখ</label><input id="billDate" type="date"><div id="lines"></div><p class="muted">একই পণ্যের আলাদা রেট হলে প্রতিবার “+ পণ্য যোগ” চাপুন। প্রতিটি লাইনে প্রতি পিসের রেট, কাটন ও অতিরিক্ত পিস আলাদা দিন।</p><button onclick="addLine()">+ পণ্য যোগ</button><p>মোট: <b id="billTotal">৳০</b></p><label>এখন জমা</label><input id="initialPaid" type="number" min="0" value="0"><button onclick="addBill()">বিল সেভ</button></div><div class="card"><h3>বিলের তালিকা</h3><div id="billList"></div></div></section>
+<section id="payments" class="hidden"><div class="card"><h3>টাকা আদায়</h3><p class="muted">এখানে শুধু আজকের বিলের বিপরীতে টাকা আদায় করা যাবে। পুরোনো বিলের বাকি আলাদা থাকবে।</p><select id="paymentBill"></select><div id="selectedDue"></div><input id="paymentAmount" type="number" min="1" placeholder="টাকার পরিমাণ"><input id="paymentDate" type="date"><button onclick="addPayment()">আদায় সেভ</button></div><div class="card" id="paymentList"></div></section>
+<section id="expenses" class="hidden"><div class="card"><h3>খরচ যোগ</h3><select id="expenseType"><option>খাজনা</option><option>নাস্তা</option><option>লেবার</option><option>গাড়ি ভাড়া</option><option>তেল/জ্বালানি</option><option>অন্যান্য</option></select><input id="expenseAmount" type="number" min="1" placeholder="টাকার পরিমাণ"><select id="expenseShop"><option value="">সাধারণ খরচ (কোনো দোকান নয়)</option></select><input id="expenseNote" placeholder="বিবরণ"><input id="expenseDate" type="date"><button onclick="addExpense()">খরচ সেভ</button></div><div class="card" id="expenseList"></div></section>
+<section id="stock" class="hidden"><div class="card"><h3>স্টকে মাল উঠান</h3><p class="muted">অফিস থেকে কার্টুন ও অতিরিক্ত পিস—দুটোই লিখুন।</p><label>পণ্য</label><select id="stockProduct" onchange="updateStockQtyHint()"></select><div class="grid"><label>কার্টুন<input id="stockCartons" type="number" min="0" step="1" value="0" oninput="updateStockQtyHint()"></label><label>অতিরিক্ত পিস<input id="stockLoose" type="number" min="0" step="1" value="0" oninput="updateStockQtyHint()"></label></div><input id="stockQty" type="hidden" value="0"><div class="muted" id="stockQtyHint">কার্টুন ও পিসের মোট হিসাব এখানে দেখাবে।</div><button onclick="addStock()">স্টক সেভ</button></div><div class="card"><h3>বর্তমান স্টক</h3><div id="stockList"></div></div></section>
+<section id="returns" class="hidden"><div class="card"><h3>মাল ফেরত</h3><select id="returnBill"></select><select id="returnProduct"></select><input id="returnQty" type="number" min="1" placeholder="পরিমাণ"><button onclick="addReturn()">ফেরত সেভ</button></div><div class="card" id="returnList"></div></section>
+<section id="stockReturn" class="hidden"><div class="card"><h3>ডিস্ট্রিবিউটরে অবিক্রীত মাল ফেরত</h3><p class="muted">ডেলিভারি শেষে যে মাল অবশিষ্ট থাকে, ডিস্ট্রিবিউটরকে ফেরত দিলে এখানে লিখুন।</p><select id="stockReturnProduct"></select><input id="stockReturnQty" type="number" min="1" placeholder="কত পিস ফেরত দিলেন"><input id="stockReturnDate" type="date"><button onclick="addStockReturn()">ফেরত সেভ</button></div><div class="card"><h3>ডিস্ট্রিবিউটরে ফেরতের তালিকা</h3><div id="stockReturnList"></div></div></section>
+<section id="reports" class="hidden"><div class="card"><h3>📄 PDF রিপোর্ট ডাউনলোড</h3><p class="muted">যে হিসাবটি দরকার সেটি চাপুন। এরপর প্রিন্ট অপশন থেকে “Save as PDF” নির্বাচন করে সংরক্ষণ করুন।</p><div class="actions"><button onclick="printReport('daily')">দৈনিক সারাংশ PDF</button><button onclick="printReport('shops')">দোকানভিত্তিক হিসাব PDF</button><button onclick="printReport('products')">পণ্য ও রেটভিত্তিক PDF</button><button onclick="printReport('stock')">স্টক হিসাব PDF</button><button onclick="printReport('expenses')">খরচের রিপোর্ট PDF</button><button onclick="printReport('full')">সম্পূর্ণ রিপোর্ট PDF</button></div></div><div class="card"><h3>তারিখ অনুযায়ী রিপোর্ট</h3><div class="filterrow"><label>শুরু<input id="filterFrom" type="date"></label><label>শেষ<input id="filterTo" type="date"></label></div><button onclick="renderFilteredReport()">রিপোর্ট দেখুন</button><div id="filteredReport"></div></div><div class="card"><h3>দিনশেষ টাকা মিল</h3><p class="muted">আজকের আদায় − আজকের খরচ = হাতে থাকার কথা। হাতে গুনে পাওয়া টাকা লিখুন।</p><div id="dailyExpected"></div><label>বাস্তবে হাতে পাওয়া টাকা</label><input id="actualCash" type="number" min="0" placeholder="টাকা লিখুন"><button onclick="saveDailyCash()">দিনশেষ হিসাব মিলান</button><div id="cashDifference"></div></div><div class="card"><h3>রিপোর্ট</h3><div id="report"></div><h4>দোকানভিত্তিক বাকি</h4><div id="balances"></div></div></section>
+<section id="backup" class="hidden"><div class="card"><h3>ব্যাকআপ</h3><button onclick="backup()">JSON ব্যাকআপ ডাউনলোড</button><input id="restoreFile" type="file" accept=".json"><button onclick="restore()">ব্যাকআপ ফিরিয়ে আনুন</button></div><div class="card"><h3>সব হিসাব মুছুন</h3><button class="danger" onclick="resetAll()">সব ডেটা রিসেট</button></div></section>
+</main><script>
+const $=id=>document.getElementById(id),fmt=n=>'৳'+Number(n||0).toLocaleString('en-IN'),date=()=>new Date().toLocaleDateString('en-CA');
+const products=[['5 লিটার',950],['3 লিটার',580],['2 লিটার',388],['1 লিটার',194],['500 ml',97],['900 ml',175],['1800 ml',350]];
+let db={shops:[],bills:[],payments:[],expenses:[],stock:[],returns:[],stockReturns:[],dailyCash:{}};try{db={...db,...JSON.parse(localStorage.getItem('kaziHisabData')||'{}')}}catch(e){}
+function save(){localStorage.setItem('kaziHisabData',JSON.stringify(db));render()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function show(id){document.querySelectorAll('main section').forEach(x=>x.classList.add('hidden'));$(id).classList.remove('hidden');render()}
+function total(b){return b.lines.reduce((s,l)=>s+l.qty*l.rate,0)}
+function paidBill(b){return (b.initial||0)+db.payments.filter(p=>p.bill===b.id).reduce((s,p)=>s+p.amount,0)}
+function returnedBill(b){return db.returns.filter(r=>r.bill===b.id).reduce((s,r)=>s+r.amount,0)}
+function dueBill(b){return Math.max(0,total(b)-paidBill(b)-returnedBill(b))}
+function shopDue(n){return db.bills.filter(b=>b.shop===n).reduce((s,b)=>s+dueBill(b),0)}
+function addShop(){let n=$('shopName').value.trim();if(!n)return alert('দোকানের নাম দিন');if(db.shops.some(x=>x.name.toLowerCase()===n.toLowerCase()))return alert('দোকান আগে আছে');db.shops.push({name:n,phone:$('shopPhone').value});$('shopName').value='';$('shopPhone').value='';save()}
+function addLine(){let d=document.createElement('div');d.className='line';d.innerHTML='<select class="p">'+products.map((p,i)=>`<option value="${i}">${p[0]}</option>`).join('')+'</select><input class="q" type="number" min="1" value="1"><input class="r" type="number" min="0" value="950"><button onclick="customRate(this)">দাম বদল</button><button class="danger" onclick="this.parentElement.remove();calc()">বাদ</button>';d.querySelector('.p').onchange=()=>{d.querySelector('.r').value=products[+d.querySelector('.p').value][1];calc()};d.querySelector('.q').oninput=d.querySelector('.r').oninput=calc;$('lines').appendChild(d);calc()}
+function customRate(b){let v=prompt('প্রতি পিস দাম লিখুন');if(v!==null&&+v>=0){b.parentElement.querySelector('.r').value=+v;calc()}}
+function calc(){let t=0;document.querySelectorAll('.line').forEach(d=>t+=(+d.querySelector('.q').value||0)*(+d.querySelector('.r').value||0));$('billTotal').textContent=fmt(t);return t}
+function addBill(){let shop=$('billShop').value.trim(),ls=[...document.querySelectorAll('.line')].map(d=>({product:products[+d.querySelector('.p').value][0],qty:+d.querySelector('.q').value,rate:+d.querySelector('.r').value})),initial=+$('initialPaid').value||0,t=ls.reduce((s,l)=>s+l.qty*l.rate,0);if(!shop||!ls.length||ls.some(l=>l.qty<1||l.rate<0)||initial<0||initial>t)return alert('দোকান, পণ্য ও জমার তথ্য ঠিক করুন');if(!db.shops.some(s=>s.name.toLowerCase()===shop.toLowerCase()))db.shops.push({name:shop,phone:''});db.bills.unshift({id:Date.now(),shop,date:$('billDate').value||date(),lines:ls,initial});$('billShop').value='';$('initialPaid').value=0;$('lines').innerHTML='';addLine();save();alert('বিল সেভ হয়েছে')}
+function addPayment(){let b=db.bills.find(x=>x.id===+$('paymentBill').value),a=+$('paymentAmount').value;if(!b||a<=0||a>dueBill(b))return alert('বিল ও সঠিক টাকা দিন');db.payments.unshift({bill:b.id,amount:a,date:$('paymentDate').value||date()});$('paymentAmount').value='';save();alert('আদায় সেভ হয়েছে')}
+function addExpense(){let a=+$('expenseAmount').value;if(a<=0)return alert('টাকা লিখুন');db.expenses.unshift({type:$('expenseType').value,amount:a,note:$('expenseNote').value,date:$('expenseDate').value||date()});$('expenseAmount').value='';$('expenseNote').value='';save()}
+function sold(n){return db.bills.reduce((s,b)=>s+b.lines.filter(l=>l.product===n).reduce((a,l)=>a+l.qty,0),0)}
+function stock(n){return db.stock.filter(x=>x.product===n).reduce((s,x)=>s+x.qty,0)-sold(n)+db.returns.filter(x=>x.product===n).reduce((s,x)=>s+x.qty,0)-db.stockReturns.filter(x=>x.product===n).reduce((s,x)=>s+x.qty,0)}
+function stockPackText(product,qty){const pack=packSizes[product]||1,n=Math.max(0,Math.floor(Number(qty)||0)),cart=Math.floor(n/pack),loose=n%pack;return `${cart} কার্টন${loose?' + '+loose+' পিস':''} (${n} পিস)`;}
+function updateStockQtyHint(){const p=products[+$('stockProduct').value]?.[0],q=+$('stockQty').value||0;$('stockQtyHint').textContent=p&&q>0?`সমপরিমাণ: ${stockPackText(p,q)} · ১ কার্টন = ${packSizes[p]} পিস`:'পিসের পরিমাণ দিলে কার্টনের সমপরিমাণ দেখাবে।';}
+function addStock(){let p=products[+$('stockProduct').value][0],q=+$('stockQty').value;if(!Number.isInteger(q)||q<=0)return alert('সঠিক পিসের পরিমাণ দিন');db.stock.unshift({product:p,qty:q});$('stockQty').value='';save();updateStockQtyHint();}
+function addStockReturn(){let p=products[+$('stockReturnProduct').value][0],q=+$('stockReturnQty').value;if(q<=0)return alert('পরিমাণ দিন');if(q>stock(p))return alert('স্টকে এত পিস নেই');db.stockReturns.unshift({product:p,qty:q,date:$('stockReturnDate').value||date()});$('stockReturnQty').value='';save();alert('ডিস্ট্রিবিউটরে ফেরত সেভ হয়েছে')}
+function saveDailyCash(){let actual=+$('actualCash').value;if(actual<0||$('actualCash').value==='')return alert('বাস্তবে হাতে পাওয়া টাকা লিখুন');db.dailyCash[date()]=actual;save();alert('দিনশেষ হিসাব সেভ হয়েছে')}
+function addReturn(){let b=db.bills.find(x=>x.id===+$('returnBill').value),i=+$('returnProduct').value,q=+$('returnQty').value,l=b?.lines[i];if(!l||q<=0)return alert('বিল ও পরিমাণ দিন');let used=db.returns.filter(x=>x.bill===b.id&&x.index===i).reduce((s,x)=>s+x.qty,0);if(q>l.qty-used)return alert('বিলের পরিমাণ ছাড়িয়েছে');db.returns.unshift({bill:b.id,index:i,product:l.product,qty:q,amount:q*l.rate});$('returnQty').value='';save()}
+function render(){let sales=db.bills.reduce((s,b)=>s+total(b),0),paid=db.bills.reduce((s,b)=>s+paidBill(b),0),due=db.bills.reduce((s,b)=>s+dueBill(b),0),ex=db.expenses.reduce((s,x)=>s+x.amount,0),ret=db.returns.reduce((s,x)=>s+x.amount,0),retPcs=db.returns.reduce((s,x)=>s+x.qty,0),pcs=db.bills.reduce((s,b)=>s+b.lines.reduce((a,l)=>a+l.qty,0),0),cash=paid-ex;$('sales').textContent=fmt(sales);$('goodsPcs').textContent=pcs+' পিস';$('paid').textContent=fmt(paid);$('due').textContent=fmt(due);$('expenseTotal').textContent=fmt(ex);$('returnTotal').textContent=fmt(ret);$('returnPcs').textContent=retPcs+' পিস';$('cashLeft').textContent=fmt(cash);$('minaaz').textContent=fmt(cash);$('homeShops').innerHTML=db.shops.map(s=>{let bs=db.bills.filter(b=>b.shop===s.name),given=bs.reduce((a,b)=>a+total(b),0),col=bs.reduce((a,b)=>a+paidBill(b),0);return `<div class="shoprow" onclick="openShop(decodeURIComponent('${encodeURIComponent(s.name)}'))"><b>${esc(s.name)} ›</b><br><span class="muted">মাল ${fmt(given)} · আদায় ${fmt(col)} · বাকি ${fmt(shopDue(s.name))}</span></div>`}).join('')||'এখনো দোকান যোগ করা হয়নি';$('shopNames').innerHTML=db.shops.map(s=>`<option value="${esc(s.name)}">`).join('');$('shopsList').innerHTML=db.shops.filter(s=>s.name.toLowerCase().includes(($('shopSearch').value||'').toLowerCase())).map(s=>`<div class="shoprow" onclick="openShop(decodeURIComponent('${'${encodeURIComponent(s.name)}'}'))"><b>${esc(s.name)}</b><br><span class="muted">বাকি ${fmt(shopDue(s.name))} • বিস্তারিত দেখতে চাপ দিন</span></div>`).join('')||'দোকান নেই';$('billList').innerHTML=db.bills.map(b=>`<div class="item"><b>${esc(b.shop)}</b> — ${b.date}<br>${b.lines.map(l=>`<div style="padding:3px 0 3px 12px">• ${esc(l.product)}: <b>${l.qty} পিস</b> × ${fmt(l.rate)}</div>`).join('')}<b>মোট ${fmt(total(b))}</b> • আদায় ${fmt(paidBill(b))} • বাকি ${fmt(dueBill(b))}</div>`).join('')||'বিল নেই';$('recent').innerHTML=db.bills.map(b=>`<div class="item">${esc(b.shop)} — ${fmt(total(b))} — বাকি ${fmt(dueBill(b))}</div>`).join('')||'বিল নেই';$('paymentBill').innerHTML=db.bills.filter(b=>b.date===date()&&dueBill(b)>0).map(b=>`<option value="${b.id}">${esc(b.shop)} — বাকি ${fmt(dueBill(b))}</option>`).join('');$('selectedDue').textContent=$('paymentBill').value?`বাকি ${fmt(dueBill(db.bills.find(b=>b.id===+$('paymentBill').value)))}`:'';$('paymentList').innerHTML=db.payments.map(p=>`<div class="item">${fmt(p.amount)} — ${p.date}</div>`).join('')||'আদায় নেই';$('expenseList').innerHTML=db.expenses.map(x=>`<div class="item">${esc(x.type)} ${fmt(x.amount)} — ${x.date} ${esc(x.note)}</div>`).join('')||'খরচ নেই';$('stockProduct').innerHTML=products.map((p,i)=>`<option value="${i}">${p[0]}</option>`).join('');$('stockReturnProduct').innerHTML=products.map((p,i)=>`<option value="${i}">${p[0]}</option>`).join('');$('stockList').innerHTML=products.map(p=>{const incoming=db.stock.filter(x=>x.product===p[0]).reduce((a,x)=>a+x.qty,0),left=stock(p[0]);return `<div class="item"><b>${p[0]}</b><br>মোট স্টকে উঠেছে: ${stockPackText(p[0],incoming)}<br>বর্তমান অবশিষ্ট: <b>${stockPackText(p[0],left)}</b></div>`}).join('');updateStockQtyHint();$('stockReturnList').innerHTML=db.stockReturns.map(x=>`<div class="item">${esc(x.date)} — ${esc(x.product)}: ${stockPackText(x.product,x.qty)}</div>`).join('')||'ডিস্ট্রিবিউটরে ফেরত নেই';$('returnBill').innerHTML=db.bills.map(b=>`<option value="${b.id}">${esc(b.shop)} ${b.date}</option>`).join('');renderReturnProducts();$('returnList').innerHTML=db.returns.map(r=>`<div class="item">${r.product} ${r.qty} পিস ${fmt(r.amount)}</div>`).join('')||'ফেরত নেই';let todayPaid=db.bills.filter(b=>b.date===date()).reduce((a,b)=>a+paidBill(b),0),todayExpense=db.expenses.filter(x=>x.date===date()).reduce((a,x)=>a+x.amount,0),expected=todayPaid-todayExpense,actual=db.dailyCash[date()];$('dailyExpected').innerHTML=`আজকের আদায়: <b>${fmt(todayPaid)}</b><br>আজকের খরচ: <b>${fmt(todayExpense)}</b><br>হাতে থাকার কথা: <b>${fmt(expected)}</b>`;$('actualCash').value=actual===undefined?'':actual;$('cashDifference').innerHTML=actual===undefined?'এখনো দিনের শেষ টাকা মেলানো হয়নি':`<b style="color:${actual===expected?'#168447':'#c33'}">${actual===expected?'হিসাব মিলেছে':actual<expected?'টাকা শর্ট: '+fmt(expected-actual):'টাকা বেশি: '+fmt(actual-expected)}</b>`;$('report').innerHTML=`মোট মাল দেওয়া ${fmt(sales)}<br>মোট আদায় ${fmt(paid)}<br>মোট বাকি ${fmt(due)}<br>মোট খরচ ${fmt(ex)}<br>দোকান থেকে মোট ফেরত ${fmt(ret)}<br>ডিস্ট্রিবিউটরে অবিক্রীত মাল ফেরত ${db.stockReturns.reduce((a,x)=>a+x.qty,0)} পিস<br>খরচ বাদে অবশিষ্ট ${fmt(cash)}`;$('balances').innerHTML=db.shops.map(s=>`<div class="item"><b>${esc(s.name)}</b> — বাকি ${fmt(shopDue(s.name))}<div style="padding-left:10px">${db.bills.filter(b=>b.shop===s.name).map(b=>`<div style="margin-top:6px">${b.date}: ${b.lines.map(l=>`${esc(l.product)} ${l.qty} পিস`).join(', ')}</div>`).join('')||'এখনো মাল দেওয়া হয়নি'}</div></div>`).join('')}
+function openShop(name){let bills=db.bills.filter(b=>b.shop===name),sale=bills.reduce((s,b)=>s+total(b),0),paid=bills.reduce((s,b)=>s+paidBill(b),0),due=bills.reduce((s,b)=>s+dueBill(b),0),ret=bills.reduce((s,b)=>s+returnedBill(b),0);$('detailShopName').textContent=name+' — সম্পূর্ণ হিসাব';$('detailSales').textContent=fmt(sale);$('detailPaid').textContent=fmt(paid);$('detailDue').textContent=fmt(due);$('detailReturns').textContent=fmt(ret);$('detailBills').innerHTML=bills.map(b=>`<div class="item"><b>তারিখ: ${esc(b.date)}</b><br>${b.lines.map(l=>`• ${esc(l.product)} — ${l.qty} পিস × ${fmt(l.rate)} = ${fmt(l.qty*l.rate)}`).join('<br>')}<br><b>বিল: ${fmt(total(b))}</b> • আদায়: ${fmt(paidBill(b))} • ফেরত: ${fmt(returnedBill(b))} • বাকি: ${fmt(dueBill(b))}</div>`).join('')||'এই দোকানে এখনো কোনো মাল দেওয়া হয়নি';let ps=bills.flatMap(b=>db.payments.filter(p=>p.bill===b.id).map(p=>({...p,shopBillDate:b.date})));$('detailPayments').innerHTML=ps.map(p=>`<div class="item">${esc(p.date)} — ${fmt(p.amount)} <span class="muted">(বিলের তারিখ ${esc(p.shopBillDate)})</span></div>`).join('')||'এখনো টাকা আদায় হয়নি';show('shopDetail')}
+function renderReturnProducts(){let b=db.bills.find(x=>x.id===+$('returnBill').value);$('returnProduct').innerHTML=b?b.lines.map((l,i)=>`<option value="${i}">${esc(l.product)} (${l.qty})</option>`).join(''):''}
+function backup(){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'}));a.href=u;a.download='kazi-hisab-backup.json';a.click();URL.revokeObjectURL(u)}
+function restore(){let f=$('restoreFile').files[0];if(!f)return alert('ফাইল নির্বাচন করুন');let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);['shops','bills','payments','expenses','stock','returns'].forEach(k=>{if(!Array.isArray(d[k]))throw 0});if(!Array.isArray(d.stockReturns))d.stockReturns=[];if(!d.dailyCash||typeof d.dailyCash!=='object')d.dailyCash={};if(confirm('বর্তমান ডেটা বদলে ব্যাকআপ আনবেন?')){db=d;save()}}catch(e){alert('ভুল ব্যাকআপ ফাইল')}};r.readAsText(f)}
+function resetAll(){if(confirm('সব হিসাব মুছবেন?')&&confirm('শেষবার নিশ্চিত করুন')){db={shops:[],bills:[],payments:[],expenses:[],stock:[],returns:[],stockReturns:[],dailyCash:{}};save()}}
+['billDate','paymentDate','expenseDate','stockReturnDate'].forEach(id=>$(id).value=date());addLine();render();
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+
+// Version 7 additions: edit/delete, receipts, aging, low-stock warning, shop expense/note, date report.
+const _renderV6=render;
+render=function(){_renderV6();renderV7();};
+function renderV7(){
+  // shop selector for optional shop-linked expenses
+  const es=$('expenseShop'); if(es){const old=es.value;es.innerHTML='<option value="">সাধারণ খরচ (কোনো দোকান নয়)</option>'+db.shops.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');es.value=old;}
+  // add actions to bills: edit, delete and receipt
+  $('billList').innerHTML=db.bills.map(b=>`<div class="item"><b>${esc(b.shop)}</b> — ${esc(b.date)}<br>${b.lines.map(l=>`<div style="padding:3px 0 3px 12px">• ${esc(l.product)}: <b>${l.qty} পিস</b> × ${fmt(l.rate)}</div>`).join('')}<b>মোট ${fmt(total(b))}</b> • আদায় ${fmt(paidBill(b))} • বাকি ${fmt(dueBill(b))}<div class="actions"><button class="mini" onclick="editBill(${b.id})">✏️ এডিট</button><button class="mini" onclick="shareBill(${b.id})">🧾 রসিদ</button><button class="mini danger" onclick="deleteBill(${b.id})">মুছুন</button></div></div>`).join('')||'বিল নেই';
+  // recent all bills, no artificial 5-item limit
+  $('recent').innerHTML=db.bills.map(b=>`<div class="item">${esc(b.shop)} — ${esc(b.date)} — ${fmt(total(b))} — বাকি ${fmt(dueBill(b))}</div>`).join('')||'বিল নেই';
+  // due aging by oldest unpaid bill
+  const aging=db.shops.map(sh=>{const unpaid=db.bills.filter(b=>b.shop===sh.name&&dueBill(b)>0).sort((a,b)=>a.date.localeCompare(b.date));if(!unpaid.length)return '';const oldest=unpaid[0],days=Math.max(0,Math.floor((new Date(date())-new Date(oldest.date))/86400000));return `<div class="item"><b>${esc(sh.name)}</b> — ${fmt(shopDue(sh.name))}<br><span class="muted">সবচেয়ে পুরোনো বাকি: ${esc(oldest.date)} (${days} দিন)</span></div>`}).join('');
+  $('balances').innerHTML=aging||'কোনো বাকি নেই';
+  // stock low warning (default threshold 10 pieces, editable)
+  const low=products.filter(p=>stock(p[0])<=10);let warn=$('stockWarning');if(!warn){warn=document.createElement('div');warn.id='stockWarning';$('stockList').before(warn);}warn.innerHTML=low.length?`<div class="warn">⚠️ কম স্টক: ${low.map(p=>`${esc(p[0])} (${stock(p[0])} পিস)`).join(', ')} — সতর্কতার সীমা ১০ পিস</div>`:'<div class="muted">স্টক সতর্কতা: কোনো পণ্য ১০ পিস বা কম নেই।</div>';
+  // shop expense shown in shop detail list when opened
+  const exBox=$('shopExpenseDetail');if(exBox){const n=$('detailShopName').textContent.replace(' — সম্পূর্ণ হিসাব','');exBox.innerHTML=db.expenses.filter(x=>x.shop===n).map(x=>`<div class="item">${esc(x.date)} — ${esc(x.type)} — ${fmt(x.amount)} ${esc(x.note||'')}</div>`).join('')||'এই দোকানের নামে খরচ নেই';}
+}
+function editBill(id){const b=db.bills.find(x=>x.id===id);if(!b)return; if(db.payments.some(p=>p.bill===id)||db.returns.some(r=>r.bill===id))return alert('এই বিলে আদায় বা ফেরত যুক্ত আছে। নিরাপত্তার জন্য আগে সেগুলো সমন্বয় করতে হবে; আপাতত শুধু পণ্য/রেট এডিট করা যাবে না।');const shop=prompt('দোকানের নাম',b.shop);if(shop===null)return;const dt=prompt('বিলের তারিখ (YYYY-MM-DD)',b.date);if(dt===null)return;let lines=[];for(let i=0;i<b.lines.length;i++){let l=b.lines[i];let q=prompt(`${l.product} কত পিস?`,l.qty);if(q===null)return;let r=prompt(`${l.product} প্রতি পিসের রেট?`,l.rate);if(r===null)return;if(+q<1||+r<0)return alert('পিস ও রেট ঠিক নয়');lines.push({...l,qty:+q,rate:+r});}let initial=prompt('বিলের সময় জমা টাকা',b.initial||0);if(initial===null)return;if(+initial<0||+initial>lines.reduce((s,l)=>s+l.qty*l.rate,0))return alert('জমা টাকা বিলের চেয়ে বেশি হতে পারবে না');b.shop=shop.trim();b.date=dt;b.lines=lines;b.initial=+initial;save();alert('বিল সংশোধন হয়েছে');}
+function deleteBill(id){const b=db.bills.find(x=>x.id===id);if(!b)return;if(db.payments.some(p=>p.bill===id)||db.returns.some(r=>r.bill===id))return alert('এই বিলে টাকা আদায় বা ফেরত যুক্ত আছে। আগে সংশ্লিষ্ট হিসাব ঠিক করুন।');if(!confirm(`${b.shop} এর ${b.date} তারিখের বিল ${fmt(total(b))} মুছবেন?`))return;db.bills=db.bills.filter(x=>x.id!==id);save();}
+function shareBill(id){const b=db.bills.find(x=>x.id===id);if(!b)return;const text=`Kazi Distributor Hisab\nদোকান: ${b.shop}\nতারিখ: ${b.date}\n${b.lines.map(l=>`${l.product}: ${l.qty} পিস × ${l.rate} = ${l.qty*l.rate} টাকা`).join('\n')}\nমোট: ${total(b)} টাকা\nআদায়: ${paidBill(b)} টাকা\nফেরত: ${returnedBill(b)} টাকা\nবাকি: ${dueBill(b)} টাকা`;if(navigator.share)navigator.share({title:'বিলের রসিদ',text}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert('রসিদ কপি হয়েছে'));else prompt('রসিদ কপি করুন',text);}
+// replace expense save to allow optional shop reference
+addExpense=function(){let a=+$('expenseAmount').value;if(a<=0)return alert('টাকা লিখুন');db.expenses.unshift({type:$('expenseType').value,amount:a,note:$('expenseNote').value,date:$('expenseDate').value||date(),shop:$('expenseShop')?.value||''});$('expenseAmount').value='';$('expenseNote').value='';save();};
+function renderFilteredReport(){let from=$('filterFrom').value||'0000-01-01',to=$('filterTo').value||'9999-12-31';if(from>to)return alert('তারিখের সীমা ঠিক করুন');const bills=db.bills.filter(x=>x.date>=from&&x.date<=to),payments=db.payments.filter(x=>x.date>=from&&x.date<=to),expenses=db.expenses.filter(x=>x.date>=from&&x.date<=to),sales=bills.reduce((s,b)=>s+total(b),0),collections=payments.reduce((s,p)=>s+p.amount,0)+bills.filter(b=>b.date>=from&&b.date<=to).reduce((s,b)=>s+(b.initial||0),0),cost=expenses.reduce((s,x)=>s+x.amount,0);$('filteredReport').innerHTML=`<div class="item">বিল: ${bills.length}টি<br>মাল দেওয়া: ${fmt(sales)}<br>আদায়: ${fmt(collections)}<br>খরচ: ${fmt(cost)}<br><b>এই সময়ে আদায় থেকে খরচ বাদে: ${fmt(collections-cost)}</b><br>নতুন বিলের বর্তমান বাকি: ${fmt(bills.reduce((s,b)=>s+dueBill(b),0))}</div>`;}
+// Add expense association in shop detail without changing existing data.
+const _openShopV6=openShop;
+openShop=function(name){_openShopV6(name);let box=$('shopExpenseDetail');if(!box){box=document.createElement('div');box.className='card';box.innerHTML='<h3>এই দোকানের নামে খরচ</h3><div id="shopExpenseDetail"></div>';$('detailPayments').parentElement.after(box);}renderV7();};
+// safe migration of optional fields
+if(!Array.isArray(db.expenses))db.expenses=[];db.expenses.forEach(x=>{if(typeof x.shop!=='string')x.shop='';});
+render();
+
+</script><script>
+// Version 8: shop-specific product rates and carton + loose-piece quantities.
+const packSizes={'5 লিটার':4,'3 লিটার':6,'2 লিটার':12,'1 লিটার':20,'500 ml':24,'900 ml':20,'1800 ml':12};
+function qtyText(product,qty){const pack=packSizes[product]||1,cart=Math.floor((+qty||0)/pack),pcs=(+qty||0)%pack;return (cart?cart+' কাটন':'')+(cart&&pcs?' + ':'')+(pcs?pcs+' পিস':(!cart?'০ পিস':''));}
+function selectedShopRates(){const name=$('billShop').value.trim().toLowerCase(),shop=db.shops.find(s=>s.name.toLowerCase()===name);return shop?.rates||{};}
+// Restore each shop's latest known bill rates when upgrading older saved data.
+db.shops.forEach(sh=>{if(!sh.rates||typeof sh.rates!=='object')sh.rates={};const latest=db.bills.filter(b=>b.shop===sh.name).sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0];if(latest)latest.lines.forEach(l=>{if(sh.rates[l.product]===undefined)sh.rates[l.product]=l.rate;});});
+function applyShopRates(){const rates=selectedShopRates();document.querySelectorAll('#lines .line').forEach(d=>{const product=products[+d.querySelector('.p').value][0];if(rates[product]!==undefined)d.querySelector('.r').value=rates[product];});calc();}
+function syncLineQty(d){const product=products[+d.querySelector('.p').value][0],pack=packSizes[product]||1,c=Math.max(0,Math.floor(+d.querySelector('.c').value||0)),u=Math.max(0,Math.floor(+d.querySelector('.u').value||0));d.querySelector('.q').value=c*pack+u;calc();}
+function addLine(){let d=document.createElement('div');d.className='line';d.innerHTML='<label>পণ্য</label><select class="p">'+products.map((p,i)=>`<option value="${i}">${p[0]} (১ কাটন = ${packSizes[p[0]]} পিস)</option>`).join('')+'</select><div class="grid"><label>কাটন<input class="c" type="number" min="0" step="1" value="0"></label><label>অতিরিক্ত পিস<input class="u" type="number" min="0" step="1" value="1"></label></div><input class="q" type="hidden" value="1"><label>প্রতি পিস রেট (৳)</label><input class="r" type="number" min="0" value="950"><div class="muted packhint">১ কাটন = ৪ পিস</div><button onclick="customRate(this)">রেট বদল</button><button class="danger" onclick="this.parentElement.remove();calc()">বাদ</button>';
+ d.querySelector('.p').onchange=()=>{const prod=products[+d.querySelector('.p').value][0],rates=selectedShopRates();d.querySelector('.r').value=rates[prod]!==undefined?rates[prod]:products[+d.querySelector('.p').value][1];d.querySelector('.packhint').textContent='১ কাটন = '+packSizes[prod]+' পিস';syncLineQty(d);};d.querySelector('.c').oninput=()=>syncLineQty(d);d.querySelector('.u').oninput=()=>syncLineQty(d);d.querySelector('.r').oninput=calc;$('lines').appendChild(d);const rates=selectedShopRates(),prod=products[0][0];if(rates[prod]!==undefined)d.querySelector('.r').value=rates[prod];calc();}
+function customRate(btn){let v=prompt('প্রতি পিস রেট লিখুন');if(v!==null&&v!==''&&Number.isFinite(+v)&&+v>=0){btn.parentElement.querySelector('.r').value=+v;calc();}}
+function calc(){let t=0;document.querySelectorAll('#lines .line').forEach(d=>{const q=+(d.querySelector('.q')?.value||0);t+=q*(+d.querySelector('.r').value||0)});$('billTotal').textContent=fmt(t);return t;}
+function addBill(){const shop=$('billShop').value.trim(),ls=[...document.querySelectorAll('#lines .line')].map(d=>({product:products[+d.querySelector('.p').value][0],qty:+d.querySelector('.q').value,rate:+d.querySelector('.r').value})),initial=+$('initialPaid').value||0,t=ls.reduce((s,l)=>s+l.qty*l.rate,0);if(!shop||!ls.length||ls.some(l=>l.qty<1||l.rate<0)||initial<0||initial>t)return alert('দোকান, কাটন/পিস, রেট ও জমার তথ্য ঠিক করুন');let sh=db.shops.find(s=>s.name.toLowerCase()===shop.toLowerCase());if(!sh){sh={name:shop,phone:'',rates:{}};db.shops.push(sh);}if(!sh.rates||typeof sh.rates!=='object')sh.rates={};ls.forEach(l=>sh.rates[l.product]=l.rate);db.bills.unshift({id:Date.now(),shop,date:$('billDate').value||date(),lines:ls,initial});$('billShop').value='';$('initialPaid').value=0;$('lines').innerHTML='';addLine();save();alert('বিল সেভ হয়েছে। এই দোকানের পণ্যের রেট সংরক্ষিত হয়েছে।');}
+$('billShop').addEventListener('change',applyShopRates);$('billShop').addEventListener('blur',applyShopRates);
+// Render carton + piece quantity wherever bill quantities are displayed.
+const _renderV8base=render;
+render=function(){_renderV8base();const list=$('billList');if(list)list.innerHTML=db.bills.map(b=>`<div class="item"><b>${esc(b.shop)}</b> — ${esc(b.date)}<br>${b.lines.map(l=>`<div style="padding:3px 0 3px 12px">• ${esc(l.product)}: <b>${qtyText(l.product,l.qty)}</b> (${l.qty} পিস) × ${fmt(l.rate)}</div>`).join('')}<b>মোট ${fmt(total(b))}</b> • আদায় ${fmt(paidBill(b))} • বাকি ${fmt(dueBill(b))}<div class="actions"><button class="mini" onclick="editBill(${b.id})">✏️ এডিট</button><button class="mini" onclick="shareBill(${b.id})">🧾 রসিদ</button><button class="mini danger" onclick="deleteBill(${b.id})">মুছুন</button></div></div>`).join('')||'বিল নেই';const recent=$('recent');if(recent)recent.innerHTML=db.bills.map(b=>`<div class="item">${esc(b.shop)} — ${esc(b.date)} — ${fmt(total(b))} — বাকি ${fmt(dueBill(b))}</div>`).join('')||'বিল নেই';};
+const _openShopV8base=openShop;
+openShop=function(name){_openShopV8base(name);$('detailBills').innerHTML=db.bills.filter(b=>b.shop===name).map(b=>`<div class="item"><b>তারিখ: ${esc(b.date)}</b><br>${b.lines.map(l=>`• ${esc(l.product)} — ${qtyText(l.product,l.qty)} (${l.qty} পিস) × ${fmt(l.rate)} = ${fmt(l.qty*l.rate)}`).join('<br>')}<br><b>বিল: ${fmt(total(b))}</b> • আদায়: ${fmt(paidBill(b))} • ফেরত: ${fmt(returnedBill(b))} • বাকি: ${fmt(dueBill(b))}</div>`).join('')||'এই দোকানে এখনো কোনো মাল দেওয়া হয়নি';};
+// Edit quantities in carton + loose-piece form too.
+editBill=function(id){const b=db.bills.find(x=>x.id===id);if(!b)return;if(db.payments.some(p=>p.bill===id)||db.returns.some(r=>r.bill===id))return alert('এই বিলে আদায় বা ফেরত যুক্ত আছে। নিরাপত্তার জন্য আগে সেগুলো সমন্বয় করতে হবে।');const shop=prompt('দোকানের নাম',b.shop);if(shop===null)return;const dt=prompt('বিলের তারিখ (YYYY-MM-DD)',b.date);if(dt===null)return;let lines=[];for(const l of b.lines){const pack=packSizes[l.product]||1,cart=Math.floor(l.qty/pack),pcs=l.qty%pack;let c=prompt(`${l.product}: কত কাটন? (১ কাটন = ${pack} পিস)`,cart);if(c===null)return;let u=prompt(`${l.product}: অতিরিক্ত কত পিস?`,pcs);if(u===null)return;let r=prompt(`${l.product}: প্রতি পিস রেট?`,l.rate);if(r===null)return;const q=(+c)*pack+(+u);if(!Number.isInteger(+c)||+c<0||!Number.isInteger(+u)||+u<0||q<1||+r<0)return alert('কাটন, পিস বা রেট সঠিক নয়');lines.push({...l,qty:q,rate:+r});}let initial=prompt('বিলের সময় জমা টাকা',b.initial||0);if(initial===null)return;const t=lines.reduce((s,l)=>s+l.qty*l.rate,0);if(+initial<0||+initial>t)return alert('জমা টাকা বিলের চেয়ে বেশি হতে পারবে না');b.shop=shop.trim();b.date=dt;b.lines=lines;b.initial=+initial;let sh=db.shops.find(x=>x.name.toLowerCase()===b.shop.toLowerCase());if(!sh){sh={name:b.shop,phone:'',rates:{}};db.shops.push(sh);}if(!sh.rates)sh.rates={};lines.forEach(l=>sh.rates[l.product]=l.rate);save();alert('বিল সংশোধন হয়েছে');};
+// Existing bills remain stored in pieces; shop-specific rates are added without changing old records.
+</script>
+
+<script>
+// Version 10: group each product's quantities by per-piece rate for the requested summary.
+function groupedProductRows(b,name){
+  const map=new Map();
+  b.lines.filter(l=>l.product===name).forEach(l=>{
+    const rate=Number(l.rate)||0;
+    map.set(rate,(map.get(rate)||0)+(Number(l.qty)||0));
+  });
+  return [...map.entries()].sort((a,b)=>a[0]-b[0]).map(([rate,qty])=>({rate,qty,amount:rate*qty}));
+}
+function billProductSummaryHTML(b){
+  const names=[...new Set([...products.map(p=>p[0]),...b.lines.map(l=>l.product)])].filter(n=>b.lines.some(l=>l.product===n));
+  return `<h3 class="sectiontitle">পণ্য ও রেটভিত্তিক বিক্রি</h3>`+names.map(name=>{
+    const rows=groupedProductRows(b,name),amount=rows.reduce((s,r)=>s+r.amount,0);
+    return `<div class="line" style="background:#fff;border:0;border-bottom:1px solid #e5eaf2;border-radius:0;padding:10px 2px"><b>${esc(name)}</b>${rows.map(r=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed #e5eaf2"><span>${fmt(r.rate)} × ${r.qty} পিস</span><b>${fmt(r.amount)}</b></div>`).join('')}<div style="text-align:right;padding-top:8px;font-weight:bold">সাইজ মোট: ${fmt(amount)}</div></div>`;
+  }).join('');
+}
+function billProductSummaryText(b){
+  const names=[...new Set([...products.map(p=>p[0]),...b.lines.map(l=>l.product)])].filter(n=>b.lines.some(l=>l.product===n));
+  return `পণ্য ও রেটভিত্তিক বিক্রি\n\n`+names.map(name=>{const rows=groupedProductRows(b,name),amount=rows.reduce((s,r)=>s+r.amount,0);return `${name}\n`+rows.map(r=>`৳${r.rate} × ${r.qty} পিস = ৳${r.amount}`).join('\n')+`\nসাইজ মোট: ৳${amount}`}).join('\n\n');
+}
+const _renderV10base=render;
+render=function(){
+  _renderV10base();
+  const list=$('billList');
+  if(list)list.innerHTML=db.bills.map(b=>`<div class="item"><b>${esc(b.shop)}</b> — ${esc(b.date)}<br>${billProductSummaryHTML(b)}<b>সর্বমোট বিল: ${fmt(total(b))}</b> · আদায় ${fmt(paidBill(b))} · বাকি ${fmt(dueBill(b))}<div class="actions"><button class="mini" onclick="editBill(${b.id})">✏️ এডিট</button><button class="mini" onclick="shareBill(${b.id})">🧾 রসিদ</button><button class="mini danger" onclick="deleteBill(${b.id})">মুছুন</button></div></div>`).join('')||'বিল নেই';
+  const recent=$('recent');
+  if(recent)recent.innerHTML=db.bills.map(b=>`<div class="item">${esc(b.shop)} — ${esc(b.date)} — ${fmt(total(b))} — বাকি ${fmt(dueBill(b))}</div>`).join('')||'বিল নেই';
+};
+const _openShopV10base=openShop;
+openShop=function(name){_openShopV10base(name);const target=$('detailBills');if(target)target.innerHTML=db.bills.filter(b=>b.shop===name).map(b=>`<div class="item"><b>তারিখ: ${esc(b.date)}</b>${billProductSummaryHTML(b)}<b>বিল: ${fmt(total(b))}</b> · আদায়: ${fmt(paidBill(b))} · ফেরত: ${fmt(returnedBill(b))} · বাকি: ${fmt(dueBill(b))}</div>`).join('')||'এই দোকানে এখনো কোনো মাল দেওয়া হয়নি';};
+shareBill=function(id){const b=db.bills.find(x=>x.id===id);if(!b)return;const text=`Kazi Distributor Hisab\nদোকান: ${b.shop}\nতারিখ: ${b.date}\n\n${billProductSummaryText(b)}\n\nসর্বমোট: ${total(b)} টাকা\nআদায়: ${paidBill(b)} টাকা\nফেরত: ${returnedBill(b)} টাকা\nবাকি: ${dueBill(b)} টাকা`;if(navigator.share)navigator.share({title:'বিলের রসিদ',text}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert('রসিদ কপি হয়েছে'));else prompt('রসিদ কপি করুন',text);};
+</script>
+
+
+<script>
+// Version 11: one consolidated product/rate summary across every shop and every bill.
+function allShopsProductRateSummaryHTML(){
+  const grouped=new Map();
+  let grandTotal=0;
+  db.bills.forEach(b=>{
+    (b.lines||[]).forEach(l=>{
+      const product=String(l.product||'অন্যান্য'),rate=Number(l.rate)||0,qty=Number(l.qty)||0;
+      if(!grouped.has(product))grouped.set(product,new Map());
+      const rates=grouped.get(product);
+      rates.set(rate,(rates.get(rate)||0)+qty);
+      grandTotal+=qty*rate;
+    });
+  });
+  const names=[...new Set([...products.map(p=>p[0]),...grouped.keys()])].filter(n=>grouped.has(n));
+  if(!names.length)return '<h3 class="sectiontitle">সব দোকান মিলিয়ে পণ্য ও রেটভিত্তিক বিক্রি</h3><p class="muted">এখনো কোনো বিল নেই। বিল তৈরি হলে সব দোকানের হিসাব এখানে একসঙ্গে দেখা যাবে।</p>';
+  return `<h3 class="sectiontitle">📊 সব দোকান মিলিয়ে পণ্য ও রেটভিত্তিক বিক্রি</h3><p class="muted">সব দোকানের সব বিল একসঙ্গে যোগ করা হয়েছে। একই পণ্যের একই রেট এক লাইনে মোট পিস হিসেবে দেখানো হয়েছে।</p>`+
+    names.map(name=>{
+      const rates=grouped.get(name),rows=[...rates.entries()].sort((a,b)=>b[0]-a[0]);
+      const subtotal=rows.reduce((sum,[rate,qty])=>sum+rate*qty,0);
+      const pieces=rows.reduce((sum,[,qty])=>sum+qty,0);
+      return `<div class="line" style="background:#fff;border:0;border-bottom:1px solid #e5eaf2;border-radius:0;padding:10px 2px"><b>${esc(name)}</b>${rows.map(([rate,qty])=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px dashed #e5eaf2"><span>৳${Number(rate).toLocaleString('en-IN')} × ${Number(qty).toLocaleString('en-IN')} পিস<br><b>${fmt(rate*qty)}</b></span><button class="mini" onclick="changeGlobalRate(decodeURIComponent('${encodeURIComponent(name)}'),${Number(rate)})">✏️ রেট পরিবর্তন</button></div>`).join('')}<div style="display:flex;justify-content:space-between;padding-top:8px;font-weight:bold"><span>সাইজ মোট (${pieces.toLocaleString('en-IN')} পিস)</span><span>${fmt(subtotal)}</span></div></div>`;
+    }).join('')+`<div class="hero" style="margin-top:12px"><b>সব দোকানের সর্বমোট বিক্রি</b><strong>${fmt(grandTotal)}</strong></div>`;
+}
+// Change one product's old per-piece rate across every shop and bill.
+// Existing payments stay unchanged; returned quantities are recalculated at the revised rate.
+function changeGlobalRate(product,oldRate){
+  const raw=prompt(`${product} পণ্যের পুরোনো রেট ৳${oldRate}। নতুন প্রতি পিস রেট লিখুন:` ,String(oldRate));
+  if(raw===null)return;
+  if(raw.trim()===''||!Number.isFinite(Number(raw))||Number(raw)<0)return alert('সঠিক নতুন রেট লিখুন');
+  const newRate=Number(raw);
+  if(newRate===Number(oldRate))return;
+  const matches=[];
+  db.bills.forEach(b=>(b.lines||[]).forEach((l,index)=>{
+    if(l.product===product&&Number(l.rate)===Number(oldRate))matches.push({bill:b,index,qty:Number(l.qty)||0});
+  }));
+  if(!matches.length)return alert('এই পণ্য ও পুরোনো রেটের কোনো বিল পাওয়া যায়নি');
+  const qty=matches.reduce((sum,x)=>sum+x.qty,0);
+  const before=qty*Number(oldRate),after=qty*newRate;
+  if(!confirm(`${product}
+পুরোনো রেট: ৳${oldRate}
+নতুন রেট: ৳${newRate}
+মোট পরিমাণ: ${qty} পিস
+আগের মোট: ${fmt(before)}
+নতুন মোট: ${fmt(after)}
+
+সব দোকানের সংশ্লিষ্ট বিল পরিবর্তন করবেন?`))return;
+  const changedIndexes=new Map();
+  matches.forEach(({bill,index})=>{
+    bill.lines[index].rate=newRate;
+    if(!changedIndexes.has(bill.id))changedIndexes.set(bill.id,new Set());
+    changedIndexes.get(bill.id).add(index);
+  });
+  // Keep return-credit amounts consistent with the revised line rate.
+  db.returns.forEach(r=>{
+    const indexes=changedIndexes.get(r.bill);
+    if(indexes&&indexes.has(r.index))r.amount=(Number(r.qty)||0)*newRate;
+  });
+  // Update saved default rates only where they still use the old rate.
+  db.shops.forEach(sh=>{
+    if(sh.rates&&Object.prototype.hasOwnProperty.call(sh.rates,product)&&Number(sh.rates[product])===Number(oldRate))sh.rates[product]=newRate;
+  });
+  save();
+  alert(`${matches.length}টি বিল-লাইনে ${qty} পিসের রেট পরিবর্তন হয়েছে।
+আগের মোট: ${fmt(before)}
+নতুন মোট: ${fmt(after)}
+পার্থক্য: ${fmt(after-before)}`);
+}
+
+const _renderV11base=render;
+render=function(){
+  _renderV11base();
+  const home=$('home');
+  if(home){
+    let card=$('allShopsRateSummary');
+    if(!card){card=document.createElement('div');card.id='allShopsRateSummary';card.className='card';const hero=home.querySelector('.hero');if(hero)home.insertBefore(card,hero);else home.appendChild(card);}
+    card.innerHTML=allShopsProductRateSummaryHTML();
+  }
+};
+
+// PDF export: opens a print-ready report; Android Chrome can save it as PDF.
+function printReport(kind){
+  const escP=esc, rows=(arr,fn)=>arr.map(fn).join('')||'<tr><td colspan="5">কোনো তথ্য নেই</td></tr>';
+  const table=(heads,body)=>`<table><thead><tr>${heads.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`;
+  const bills=db.bills||[], expenses=db.expenses||[];
+  const sales=bills.reduce((a,b)=>a+total(b),0), collected=bills.reduce((a,b)=>a+paidBill(b),0), due=bills.reduce((a,b)=>a+dueBill(b),0), cost=expenses.reduce((a,x)=>a+(+x.amount||0),0);
+  let title='হিসাব রিপোর্ট',body='';
+  const daily=`<div class="stats"><p>মোট মাল দেওয়া: <b>${fmt(sales)}</b></p><p>মোট আদায়: <b>${fmt(collected)}</b></p><p>মোট বাকি: <b>${fmt(due)}</b></p><p>মোট খরচ: <b>${fmt(cost)}</b></p><p>দোকান থেকে ফেরত: <b>${fmt(db.returns.reduce((a,x)=>a+(+x.amount||0),0))}</b></p><p>হাতে অবশিষ্ট (আদায় − খরচ): <b>${fmt(collected-cost)}</b></p></div>`;
+  if(kind==='daily'||kind==='full'){title='দৈনিক সারাংশ';body=daily;}
+  if(kind==='shops'||kind==='full'){
+    const shopTable=table(['দোকান','তারিখ','পণ্যের বিবরণ','বিল','আদায়','ফেরত','বাকি'],rows(bills,b=>`<tr><td>${escP(b.shop)}</td><td>${escP(b.date)}</td><td>${b.lines.map(l=>`${escP(l.product)}: ${l.qty} পিস × ${fmt(l.rate)}`).join('<br>')}</td><td>${fmt(total(b))}</td><td>${fmt(paidBill(b))}</td><td>${fmt(returnedBill(b))}</td><td>${fmt(dueBill(b))}</td></tr>`));
+    if(kind==='shops')title='দোকানভিত্তিক সম্পূর্ণ হিসাব';body+=`<h2>দোকানভিত্তিক হিসাব</h2>${shopTable}`;
+  }
+  if(kind==='products'||kind==='full'){
+    const grouped=new Map();bills.forEach(b=>(b.lines||[]).forEach(l=>{if(!grouped.has(l.product))grouped.set(l.product,new Map());const m=grouped.get(l.product);m.set(+l.rate,(m.get(+l.rate)||0)+(+l.qty||0));}));
+    const productRows=[];grouped.forEach((rates,product)=>rates.forEach((qty,rate)=>productRows.push({product,rate,qty,amount:qty*rate})));
+    if(kind==='products')title='সব দোকান মিলিয়ে পণ্য ও রেটভিত্তিক হিসাব';body+=`<h2>পণ্য ও রেটভিত্তিক হিসাব</h2>${table(['পণ্য','প্রতি পিস রেট','মোট পিস','মোট টাকা'],rows(productRows,x=>`<tr><td>${escP(x.product)}</td><td>${fmt(x.rate)}</td><td>${x.qty}</td><td>${fmt(x.amount)}</td></tr>`))}`;
+  }
+  if(kind==='stock'||kind==='full'){
+    if(kind==='stock')title='স্টক হিসাব';body+=`<h2>স্টক হিসাব</h2>${table(['পণ্য','মোট উঠেছে','দোকানে দেওয়া','দোকান থেকে ফেরত','ডিস্ট্রিবিউটরে ফেরত','অবশিষ্ট'],rows(products.map(p=>p[0]),p=>`<tr><td>${escP(p)}</td><td>${stockPackText(p,db.stock.filter(x=>x.product===p).reduce((a,x)=>a+x.qty,0))}</td><td>${stockPackText(p,sold(p))}</td><td>${stockPackText(p,db.returns.filter(x=>x.product===p).reduce((a,x)=>a+x.qty,0))}</td><td>${stockPackText(p,db.stockReturns.filter(x=>x.product===p).reduce((a,x)=>a+x.qty,0))}</td><td>${stockPackText(p,stock(p))}</td></tr>`))}`;
+  }
+  if(kind==='expenses'||kind==='full'){
+    if(kind==='expenses')title='খরচের বিস্তারিত রিপোর্ট';body+=`<h2>খরচের বিস্তারিত</h2>${table(['তারিখ','খরচের ধরন','বিবরণ','টাকা'],rows(expenses,x=>`<tr><td>${escP(x.date)}</td><td>${escP(x.type)}</td><td>${escP(x.note||'')}</td><td>${fmt(x.amount)}</td></tr>`))}<p><b>মোট খরচ: ${fmt(cost)}</b></p>`;
+  }
+  const w=window.open('','_blank');if(!w){alert('পপ-আপ বন্ধ আছে। ব্রাউজারে pop-up অনুমতি দিন, তারপর আবার চেষ্টা করুন।');return;}
+  w.document.open();w.document.write(`<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{font-family:Arial,"Noto Sans Bengali",sans-serif;color:#172033;padding:20px;font-size:13px}h1{text-align:center;font-size:21px}h2{font-size:16px;margin-top:22px;border-bottom:1px solid #bbb;padding-bottom:6px}.muted{color:#555}table{width:100%;border-collapse:collapse;margin:10px 0 20px}th,td{border:1px solid #bbb;padding:7px;text-align:left;vertical-align:top}th{background:#eee}.stats{line-height:1.8}.print{margin:10px 0;padding:10px 16px;background:#1264dc;color:white;border:0;border-radius:6px}@media print{.print{display:none}body{padding:0}}</style></head><body><h1>Kazi Distributor Hisab</h1><p style="text-align:center">${title} · তৈরি: ${date()}</p>${body}<button class="print" onclick="window.print()">PDF সেভ / প্রিন্ট</button>
+</body></html>`);w.document.close();
+}
+
+</script>
+
+<script>
+// V15 stable patch: pending delivery confirmation and carton+piece stock intake.
+function isBillConfirmed(b){return b.status!=='pending';}
+const _v15SoldBase=sold;
+sold=function(n){return db.bills.filter(isBillConfirmed).reduce((sum,b)=>sum+b.lines.filter(l=>l.product===n).reduce((a,l)=>a+l.qty,0),0)};
+function updateStockQtyHint(){
+ const p=products[+$('stockProduct').value]?.[0],pack=packSizes[p]||1;
+ const c=Math.max(0,Math.floor(+$('stockCartons').value||0)),u=Math.max(0,Math.floor(+$('stockLoose').value||0));
+ const q=c*pack+u;$('stockQty').value=q;
+ $('stockQtyHint').textContent=p?`মোট যোগ হবে: ${q} পিস (${c} কার্টুন + ${u} পিস) · ১ কার্টুন = ${pack} পিস`:'পণ্য নির্বাচন করুন';
+}
+addStock=function(){
+ const p=products[+$('stockProduct').value][0],c=+$('stockCartons').value||0,u=+$('stockLoose').value||0,pack=packSizes[p]||1,q=c*pack+u;
+ if(!Number.isInteger(c)||!Number.isInteger(u)||c<0||u<0||q<=0)return alert('কার্টুন বা পিসের সঠিক পরিমাণ দিন');
+ db.stock.unshift({product:p,qty:q,date:date(),cartons:c,loose:u});$('stockCartons').value=0;$('stockLoose').value=0;save();updateStockQtyHint();alert(`${q} পিস স্টকে যোগ হয়েছে`);
+};
+const _v15RenderBase=render;
+render=function(){
+ _v15RenderBase();
+ const list=$('billList');if(list)list.innerHTML=db.bills.map(b=>{
+  const pending=b.status==='pending';
+  return `<div class="item"><b>${esc(b.shop)}</b> — ${esc(b.date)}<br>${b.lines.map(l=>`<div style="padding:3px 0 3px 12px">• ${esc(l.product)}: <b>${qtyText(l.product,l.qty)}</b> (${l.qty} পিস) × ${fmt(l.rate)}</div>`).join('')}<b>মোট ${fmt(total(b))}</b> • আদায় ${fmt(paidBill(b))} • বাকি ${fmt(dueBill(b))}<div class="muted">${pending?'⏳ ডেলিভারি বাকি':'✓ বিল কনফার্মড'}</div><div class="actions">${pending?`<button class="mini" onclick="confirmBill(${b.id})">✓ বিল কনফার্ম</button>`:''}<button class="mini" onclick="editBill(${b.id})">✏️ এডিট</button><button class="mini" onclick="shareBill(${b.id})">🧾 রসিদ</button><button class="mini danger" onclick="deleteBill(${b.id})">মুছুন</button></div></div>`;
+ }).join('')||'বিল নেই';
+};
+addBill=function(){
+ const shop=$('billShop').value.trim(),ls=[...document.querySelectorAll('#lines .line')].map(d=>({product:products[+d.querySelector('.p').value][0],qty:+d.querySelector('.q').value,rate:+d.querySelector('.r').value})),initial=+$('initialPaid').value||0,t=ls.reduce((a,l)=>a+l.qty*l.rate,0);
+ if(!shop||!ls.length||ls.some(l=>!Number.isInteger(l.qty)||l.qty<1||l.rate<0)||initial<0||initial>t)return alert('দোকান, কার্টুন/পিস, রেট ও জমার তথ্য ঠিক করুন');
+ let sh=db.shops.find(x=>x.name.toLowerCase()===shop.toLowerCase());if(!sh){sh={name:shop,phone:'',rates:{}};db.shops.push(sh);}if(!sh.rates)sh.rates={};ls.forEach(l=>sh.rates[l.product]=l.rate);
+ db.bills.unshift({id:Date.now(),shop,date:$('billDate').value||date(),lines:ls,initial,status:'pending'});
+ $('billShop').value='';$('initialPaid').value=0;$('lines').innerHTML='';addLine();save();alert('অর্ডার সেভ হয়েছে। ডেলিভারির পর বিল কনফার্ম করুন; এখন স্টক কমেনি।');
+};
+function confirmBill(id){
+ const b=db.bills.find(x=>x.id===id);if(!b||b.status!=='pending')return alert('এই বিলটি আগে থেকেই কনফার্মড');
+ const actual=[];
+ for(const l of b.lines){const pack=packSizes[l.product]||1,defC=Math.floor(l.qty/pack),defU=l.qty%pack;let c=prompt(`${l.product}: ডেলিভারির কার্টুন সংখ্যা? (১ কার্টুন=${pack} পিস)`,defC);if(c===null)return;let u=prompt(`${l.product}: অতিরিক্ত পিস?`,defU);if(u===null)return;if(!/^\d+$/.test(c)||!/^\d+$/.test(u))return alert('কার্টুন ও পিস পূর্ণ সংখ্যা হতে হবে');const q=(+c)*pack+(+u);if(q<1)return alert('প্রতিটি পণ্যের ডেলিভারি কমপক্ষে ১ পিস হতে হবে');actual.push({...l,qty:q});}
+ for(const prod of [...new Set(actual.map(x=>x.product))]){const need=actual.filter(x=>x.product===prod).reduce((a,x)=>a+x.qty,0);if(need>stock(prod))return alert(`${prod} স্টকে পর্যাপ্ত নেই। প্রয়োজন ${need} পিস, আছে ${stock(prod)} পিস`);}
+ b.lines=actual;b.status='confirmed';b.confirmedAt=date();save();alert('বিল কনফার্ম হয়েছে। প্রকৃত ডেলিভারি অনুযায়ী স্টক ও বিক্রির হিসাব আপডেট হয়েছে।');
+}
+// Existing V14 bills without a status remain confirmed; only new pending bills await delivery.
+updateStockQtyHint();render();
+</script>
+</body></html>
