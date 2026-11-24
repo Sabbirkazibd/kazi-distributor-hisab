@@ -260,7 +260,8 @@ function printReport(kind){
     if(kind==='expenses')title='খরচের বিস্তারিত রিপোর্ট';body+=`<h2>খরচের বিস্তারিত</h2>${table(['তারিখ','খরচের ধরন','বিবরণ','টাকা'],rows(expenses,x=>`<tr><td>${escP(x.date)}</td><td>${escP(x.type)}</td><td>${escP(x.note||'')}</td><td>${fmt(x.amount)}</td></tr>`))}<p><b>মোট খরচ: ${fmt(cost)}</b></p>`;
   }
   const w=window.open('','_blank');if(!w){alert('পপ-আপ বন্ধ আছে। ব্রাউজারে pop-up অনুমতি দিন, তারপর আবার চেষ্টা করুন।');return;}
-  w.document.open();w.document.write(`<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{font-family:Arial,"Noto Sans Bengali",sans-serif;color:#172033;padding:20px;font-size:13px}h1{text-align:center;font-size:21px}h2{font-size:16px;margin-top:22px;border-bottom:1px solid #bbb;padding-bottom:6px}.muted{color:#555}table{width:100%;border-collapse:collapse;margin:10px 0 20px}th,td{border:1px solid #bbb;padding:7px;text-align:left;vertical-align:top}th{background:#eee}.stats{line-height:1.8}.print{margin:10px 0;padding:10px 16px;background:#1264dc;color:white;border:0;border-radius:6px}@media print{.print{display:none}body{padding:0}}</style></head><body><h1>Kazi Distributor Hisab</h1><p style="text-align:center">${title} · তৈরি: ${date()}</p>${body}<button class="print" onclick="window.print()">PDF সেভ / প্রিন্ট</button></body></html>`);w.document.close();
+  w.document.open();w.document.write(`<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{font-family:Arial,"Noto Sans Bengali",sans-serif;color:#172033;padding:20px;font-size:13px}h1{text-align:center;font-size:21px}h2{font-size:16px;margin-top:22px;border-bottom:1px solid #bbb;padding-bottom:6px}.muted{color:#555}table{width:100%;border-collapse:collapse;margin:10px 0 20px}th,td{border:1px solid #bbb;padding:7px;text-align:left;vertical-align:top}th{background:#eee}.stats{line-height:1.8}.print{margin:10px 0;padding:10px 16px;background:#1264dc;color:white;border:0;border-radius:6px}@media print{.print{display:none}body{padding:0}}</style></head><body><h1>Kazi Distributor Hisab</h1><p style="text-align:center">${title} · তৈরি: ${date()}</p>${body}<button class="print" onclick="window.print()">PDF সেভ / প্রিন্ট</button>
+</body></html>`);w.document.close();
 }
 
 </script>
@@ -305,6 +306,5 @@ function confirmBill(id){
 }
 // Existing V14 bills without a status remain confirmed; only new pending bills await delivery.
 updateStockQtyHint();render();
-
 </script>
 </body></html>
