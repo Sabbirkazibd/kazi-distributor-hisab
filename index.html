@@ -260,48 +260,7 @@ function printReport(kind){
     if(kind==='expenses')title='খরচের বিস্তারিত রিপোর্ট';body+=`<h2>খরচের বিস্তারিত</h2>${table(['তারিখ','খরচের ধরন','বিবরণ','টাকা'],rows(expenses,x=>`<tr><td>${escP(x.date)}</td><td>${escP(x.type)}</td><td>${escP(x.note||'')}</td><td>${fmt(x.amount)}</td></tr>`))}<p><b>মোট খরচ: ${fmt(cost)}</b></p>`;
   }
   const w=window.open('','_blank');if(!w){alert('পপ-আপ বন্ধ আছে। ব্রাউজারে pop-up অনুমতি দিন, তারপর আবার চেষ্টা করুন।');return;}
-  w.document.open();w.document.write(`<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{font-family:Arial,"Noto Sans Bengali",sans-serif;color:#172033;padding:20px;font-size:13px}h1{text-align:center;font-size:21px}h2{font-size:16px;margin-top:22px;border-bottom:1px solid #bbb;padding-bottom:6px}.muted{color:#555}table{width:100%;border-collapse:collapse;margin:10px 0 20px}th,td{border:1px solid #bbb;padding:7px;text-align:left;vertical-align:top}th{background:#eee}.stats{line-height:1.8}.print{margin:10px 0;padding:10px 16px;background:#1264dc;color:white;border:0;border-radius:6px}@media print{.print{display:none}body{padding:0}}</style></head><body><h1>Kazi Distributor Hisab</h1><p style="text-align:center">${title} · তৈরি: ${date()}</p>${body}<button class="print" onclick="window.print()">PDF সেভ / প্রিন্ট</button><script>
-// V15 stable patch: pending delivery confirmation and carton+piece stock intake.
-function isBillConfirmed(b){return b.status!=='pending';}
-const _v15SoldBase=sold;
-sold=function(n){return db.bills.filter(isBillConfirmed).reduce((sum,b)=>sum+b.lines.filter(l=>l.product===n).reduce((a,l)=>a+l.qty,0),0)};
-function updateStockQtyHint(){
- const p=products[+$('stockProduct').value]?.[0],pack=packSizes[p]||1;
- const c=Math.max(0,Math.floor(+$('stockCartons').value||0)),u=Math.max(0,Math.floor(+$('stockLoose').value||0));
- const q=c*pack+u;$('stockQty').value=q;
- $('stockQtyHint').textContent=p?`মোট যোগ হবে: ${q} পিস (${c} কার্টুন + ${u} পিস) · ১ কার্টুন = ${pack} পিস`:'পণ্য নির্বাচন করুন';
-}
-addStock=function(){
- const p=products[+$('stockProduct').value][0],c=+$('stockCartons').value||0,u=+$('stockLoose').value||0,pack=packSizes[p]||1,q=c*pack+u;
- if(!Number.isInteger(c)||!Number.isInteger(u)||c<0||u<0||q<=0)return alert('কার্টুন বা পিসের সঠিক পরিমাণ দিন');
- db.stock.unshift({product:p,qty:q,date:date(),cartons:c,loose:u});$('stockCartons').value=0;$('stockLoose').value=0;save();updateStockQtyHint();alert(`${q} পিস স্টকে যোগ হয়েছে`);
-};
-const _v15RenderBase=render;
-render=function(){
- _v15RenderBase();
- const list=$('billList');if(list)list.innerHTML=db.bills.map(b=>{
-  const pending=b.status==='pending';
-  return `<div class="item"><b>${esc(b.shop)}</b> — ${esc(b.date)}<br>${b.lines.map(l=>`<div style="padding:3px 0 3px 12px">• ${esc(l.product)}: <b>${qtyText(l.product,l.qty)}</b> (${l.qty} পিস) × ${fmt(l.rate)}</div>`).join('')}<b>মোট ${fmt(total(b))}</b> • আদায় ${fmt(paidBill(b))} • বাকি ${fmt(dueBill(b))}<div class="muted">${pending?'⏳ ডেলিভারি বাকি':'✓ বিল কনফার্মড'}</div><div class="actions">${pending?`<button class="mini" onclick="confirmBill(${b.id})">✓ বিল কনফার্ম</button>`:''}<button class="mini" onclick="editBill(${b.id})">✏️ এডিট</button><button class="mini" onclick="shareBill(${b.id})">🧾 রসিদ</button><button class="mini danger" onclick="deleteBill(${b.id})">মুছুন</button></div></div>`;
- }).join('')||'বিল নেই';
-};
-addBill=function(){
- const shop=$('billShop').value.trim(),ls=[...document.querySelectorAll('#lines .line')].map(d=>({product:products[+d.querySelector('.p').value][0],qty:+d.querySelector('.q').value,rate:+d.querySelector('.r').value})),initial=+$('initialPaid').value||0,t=ls.reduce((a,l)=>a+l.qty*l.rate,0);
- if(!shop||!ls.length||ls.some(l=>!Number.isInteger(l.qty)||l.qty<1||l.rate<0)||initial<0||initial>t)return alert('দোকান, কার্টুন/পিস, রেট ও জমার তথ্য ঠিক করুন');
- let sh=db.shops.find(x=>x.name.toLowerCase()===shop.toLowerCase());if(!sh){sh={name:shop,phone:'',rates:{}};db.shops.push(sh);}if(!sh.rates)sh.rates={};ls.forEach(l=>sh.rates[l.product]=l.rate);
- db.bills.unshift({id:Date.now(),shop,date:$('billDate').value||date(),lines:ls,initial,status:'pending'});
- $('billShop').value='';$('initialPaid').value=0;$('lines').innerHTML='';addLine();save();alert('অর্ডার সেভ হয়েছে। ডেলিভারির পর বিল কনফার্ম করুন; এখন স্টক কমেনি।');
-};
-function confirmBill(id){
- const b=db.bills.find(x=>x.id===id);if(!b||b.status!=='pending')return alert('এই বিলটি আগে থেকেই কনফার্মড');
- const actual=[];
- for(const l of b.lines){const pack=packSizes[l.product]||1,defC=Math.floor(l.qty/pack),defU=l.qty%pack;let c=prompt(`${l.product}: ডেলিভারির কার্টুন সংখ্যা? (১ কার্টুন=${pack} পিস)`,defC);if(c===null)return;let u=prompt(`${l.product}: অতিরিক্ত পিস?`,defU);if(u===null)return;if(!/^\d+$/.test(c)||!/^\d+$/.test(u))return alert('কার্টুন ও পিস পূর্ণ সংখ্যা হতে হবে');const q=(+c)*pack+(+u);if(q<1)return alert('প্রতিটি পণ্যের ডেলিভারি কমপক্ষে ১ পিস হতে হবে');actual.push({...l,qty:q});}
- for(const prod of [...new Set(actual.map(x=>x.product))]){const need=actual.filter(x=>x.product===prod).reduce((a,x)=>a+x.qty,0);if(need>stock(prod))return alert(`${prod} স্টকে পর্যাপ্ত নেই। প্রয়োজন ${need} পিস, আছে ${stock(prod)} পিস`);}
- b.lines=actual;b.status='confirmed';b.confirmedAt=date();save();alert('বিল কনফার্ম হয়েছে। প্রকৃত ডেলিভারি অনুযায়ী স্টক ও বিক্রির হিসাব আপডেট হয়েছে।');
-}
-// Existing V14 bills without a status remain confirmed; only new pending bills await delivery.
-updateStockQtyHint();render();
-</script>
-</body></html>`);w.document.close();
+  w.document.open();w.document.write(`<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{font-family:Arial,"Noto Sans Bengali",sans-serif;color:#172033;padding:20px;font-size:13px}h1{text-align:center;font-size:21px}h2{font-size:16px;margin-top:22px;border-bottom:1px solid #bbb;padding-bottom:6px}.muted{color:#555}table{width:100%;border-collapse:collapse;margin:10px 0 20px}th,td{border:1px solid #bbb;padding:7px;text-align:left;vertical-align:top}th{background:#eee}.stats{line-height:1.8}.print{margin:10px 0;padding:10px 16px;background:#1264dc;color:white;border:0;border-radius:6px}@media print{.print{display:none}body{padding:0}}</style></head><body><h1>Kazi Distributor Hisab</h1><p style="text-align:center">${title} · তৈরি: ${date()}</p>${body}<button class="print" onclick="window.print()">PDF সেভ / প্রিন্ট</button></body></html>`);w.document.close();
 }
 
 </script>
@@ -346,5 +305,6 @@ function confirmBill(id){
 }
 // Existing V14 bills without a status remain confirmed; only new pending bills await delivery.
 updateStockQtyHint();render();
+
 </script>
 </body></html>
